@@ -31,8 +31,8 @@ def create_post(post: Post):
     return {"New Post": post_dict}
 
 def find_post(id):
-    for p in my_posts:
-        if p['id']==id: return p
+    for i, p in enumerate(my_posts):
+        if p['id']==id: return i
 
 @app.get("/posts/{id}")
 def get_post(id:int, response: Response):
@@ -43,3 +43,12 @@ def get_post(id:int, response: Response):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
                             detail=f"Post with id {id} was not found")
     return {"post details":find_post(id)}
+
+@app.delete("/posts/{id}", status_code=status.HTTP_204_NO_CONTENT ) 
+def delete_post(id:int):
+    # print("Deleting...")
+    # i, post = find_post(id)
+    if find_post(id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id {id} does not exists!") 
+    else: my_posts.pop(find_post(id))
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
