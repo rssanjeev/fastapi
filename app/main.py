@@ -52,3 +52,15 @@ def delete_post(id:int):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id {id} does not exists!") 
     else: my_posts.pop(find_post(id))
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@app.put("/posts/{id}")
+def update_post(id:int, post:Post):
+    index = find_post(id)
+
+    if index is None: raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                          detail=f"Post is id: {id} deosnt exist!")
+    post_dict = post.model_dump()
+    post_dict['id'] = id
+    my_posts[index] = post_dict
+    return {"message":"Post Updated"}
