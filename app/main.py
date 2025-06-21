@@ -4,9 +4,22 @@ from typing import Optional
 from random import randrange
 import psycopg2, time
 from psycopg2.extras import RealDictCursor 
+from . import models
+from sqlalchemy.orm import session
+from .database import engine, session_local
 
+models.Base.metadata.create_all(bind= engine)
 
 app = FastAPI()
+
+#dependency
+def get_db():
+    db = session_local()
+    try:
+        yield db
+    except:
+        db.close()
+
 
 while True:
     try:
