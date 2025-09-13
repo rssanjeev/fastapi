@@ -1,10 +1,8 @@
 from fastapi import Body, FastAPI, Response, status, HTTPException, Depends
-from pydantic import BaseModel
-from typing import Optional
 from random import randrange
 import psycopg2, time
 from psycopg2.extras import RealDictCursor 
-from . import models
+from . import models, schemas
 from .models import Post
 from sqlalchemy.orm import Session
 from .database import engine, get_db
@@ -33,11 +31,7 @@ while True:
         print(f"Connection Failed:", error)
         time.sleep(3)
 
-class Post(BaseModel):
-    title: str
-    content: str
-    published: bool = True
-    rating: Optional[int] = 0
+
 
 my_posts=[{"title": "title of post 1", "content":"content of post 1", "id":1},
             {"title":"title of post 2", "content":"content of post 2","id":2}]
@@ -55,7 +49,7 @@ def get_posts(db: Session = Depends(get_db)):
     return {"data": posts }
 
 @app.post("/posts", status_code=status.HTTP_201_CREATED)
-def create_post(post: Post, db: Session = Depends(get_db)):
+def create_post(post: schemas.PostCreate, db: Session = Depends(get_db)):
     try:
         # Filter only model fields
         # print({key: value for key, value in post.model_dump().items()})
@@ -95,7 +89,7 @@ def delete_post(id:int, db: Session = Depends(get_db)):
 
 
 @app.put("/posts/{id}")
-def update_post(id:int, post:Post, db: Session = Depends(get_db)):
+def update_post(id:int, post:schemas.PostUpdate, db: Session = Depends(get_db)): 
     post_query = db.query(models.Post).filter(models.Post.id == id)
     existing_post = post_query.first()
     if existing_post is None:
