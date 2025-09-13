@@ -79,12 +79,9 @@ def find_post(id):
 
 @app.get("/posts/{id}")
 def get_post(id:int, response: Response, db: Session = Depends(get_db)):
-    # cursor.execute(""" SELECT * FROM POSTS WHERE ID = %s""", (str(id)))
-    # post = cursor.fetchone()
-    # if post is None:
-    #     return {"post details": f"Post with id {id} was not found"} 
     post = db.query(models.Post).filter(models.Post.id == id).first()
-
+    if post is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id {id} does not exists!")
     return {"post details":post}
 
 @app.delete("/posts/{id}", status_code=status.HTTP_204_NO_CONTENT ) 
