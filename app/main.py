@@ -39,9 +39,9 @@ my_posts=[{"title": "title of post 1", "content":"content of post 1", "id":1},
 @app.get("/")
 async def root():
     return {"message": "Hello"}
-
+ 
 @app.get("/posts")
-def get_posts(db: Session = Depends(get_db)):
+def get_posts(db: Session = Depends(get_db), response_model=list[schemas.PostResponse]):
     posts = db.query(models.Post).all()
     return posts 
 
@@ -62,11 +62,11 @@ def create_post(post: schemas.PostCreate, db: Session = Depends(get_db)):
         )
 
 def find_post(id):
-    for i, p in enumerate(my_posts):
+    for i, p in enumerate(my_posts): 
         if p['id']==id: return i
 
 @app.get("/posts/{id}")
-def get_post(id:int, response: Response, db: Session = Depends(get_db)):
+def get_post(id:int, response: Response, db: Session = Depends(get_db), response_model=schemas.PostResponse):
     post = db.query(models.Post).filter(models.Post.id == id).first()
     if post is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id {id} does not exists!")
@@ -92,3 +92,11 @@ def update_post(id:int, post:schemas.PostUpdate, db: Session = Depends(get_db)):
     post_query.update(post.model_dump(), synchronize_session=False)
     db.commit()
     return {"message":"Post Updated"}
+
+@app.post("/users", status_code=status.HTTP_201_CREATED)
+def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+    new_user = models.User(**user. ())
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    return new_user  
