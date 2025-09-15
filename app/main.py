@@ -11,12 +11,8 @@ from .routers import post, user
 models.Base.metadata.create_all(bind= engine)
 
 app = FastAPI() 
-
-@app.get("/sqlalchemy")
-def test_posts(db: Session = Depends(get_db)):
-    posts = db.query(models.Post).all()
-    return {'data':posts} 
-
+app.include_router(post.router)
+app.include_router(user.router)
 
 
 while True:
@@ -31,10 +27,7 @@ while True:
         print(f"Connection Failed:", error)
         time.sleep(3)
 
-app.include_router(post.router)
-app.include_router(user.router)
-
-@app.get("/")
+@app.get("/") 
 async def root():  
     return {"message": "Hello"}
 
