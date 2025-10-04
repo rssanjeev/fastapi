@@ -11,7 +11,7 @@ router = APIRouter(
 )
 
 @router.get("/")
-def get_posts(db: Session = Depends(get_db), response_model=list[schemas.PostResponse]):
+def get_posts(db: Session = Depends(get_db), response_model=list[schemas.PostResponse], current_user: int = Depends(get_current_user)):
     posts = db.query(models.Post).all()
     return posts 
 
@@ -32,14 +32,14 @@ def create_post(post: schemas.PostCreate, db: Session = Depends(get_db), current
         )
 
 @router.get("/{id}")
-def get_post(id:int, response: Response, db: Session = Depends(get_db), response_model=schemas.PostResponse):
+def get_post(id:int, response: Response, db: Session = Depends(get_db), response_model=schemas.PostResponse, current_user: int = Depends(get_current_user)):
     post = db.query(models.Post).filter(models.Post.id == id).first()
     if post is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id {id} does not exists!")
     return post
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT ) 
-def delete_post(id:int, db: Session = Depends(get_db)):
+def delete_post(id:int, db: Session = Depends(get_db), current_user: int = Depends(get_current_user)):
     post = db.query(models.Post).filter(models.Post.id == id)
     if post.first() is None:
         raise HTTPException(status_code  =status.HTTP_404_NOT_FOUND, detail=f"Post with id {id} does not exists!")
@@ -49,7 +49,7 @@ def delete_post(id:int, db: Session = Depends(get_db)):
 
 
 @router.put("/{id}")
-def update_post(id:int, post:schemas.PostUpdate, db: Session = Depends(get_db)): 
+def update_post(id:int, post:schemas.PostUpdate, db: Session = Depends(get_db), current_user: int = Depends(get_current_user)):
     post_query = db.query(models.Post).filter(models.Post.id == id)
     existing_post = post_query.first()
     if existing_post is None:
