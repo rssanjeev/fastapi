@@ -38,11 +38,11 @@ def get_post(id:int, response: Response, db: Session = Depends(get_db), response
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id {id} does not exists!")
     return post
 
-@router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT ) 
+@router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT) 
 def delete_post(id:int, db: Session = Depends(get_db), current_user: int = Depends(get_current_user)):
     post = db.query(models.Post).filter(models.Post.id == id)
     if post.first() is None:
-        raise HTTPException(status_code  =status.HTTP_404_NOT_FOUND, detail=f"Post with id {id} does not exists!")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id {id} does not exists!")
     post.delete(synchronize_session=False)
     db.commit()
     return {"Post Deleted!"}
