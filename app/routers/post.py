@@ -10,10 +10,10 @@ router = APIRouter(
     tags=["Posts"]
 )
 
-@router.get("/")
-def get_posts(db: Session = Depends(get_db), response_model=list[schemas.PostResponse], current_user: int = Depends(get_current_user)):
-    posts = db.query(models.Post).all()
-    return posts 
+@router.get("", response_model=list[schemas.PostResponse])
+def get_posts(db: Session = Depends(get_db), current_user: int = Depends(get_current_user), limit: int = 10):
+    posts = db.query(models.Post).limit(limit).all()
+    return posts
 
 @router.post("", status_code=status.HTTP_201_CREATED, response_model=schemas.PostResponse)
 def create_post(post: schemas.PostCreate, db: Session = Depends(get_db), current_user: int = Depends(get_current_user)):
@@ -31,8 +31,8 @@ def create_post(post: schemas.PostCreate, db: Session = Depends(get_db), current
             detail=f"An error occurred: {str(e)}"
         )
 
-@router.get("/{id}")
-def get_post(id:int, response: Response, db: Session = Depends(get_db), response_model=schemas.PostResponse, current_user: int = Depends(get_current_user)):
+@router.get("/{id}", response_model=schemas.PostResponse )
+def get_post(id:int, response: Response, db: Session = Depends(get_db), current_user: int = Depends(get_current_user)):
     post = db.query(models.Post).filter(models.Post.id == id).first()
     if post is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id {id} does not exists!")
@@ -41,8 +41,13 @@ def get_post(id:int, response: Response, db: Session = Depends(get_db), response
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT) 
 def delete_post(id:int, db: Session = Depends(get_db), current_user: int = Depends(get_current_user)):
     post = db.query(models.Post).filter(models.Post.id == id)
+    
     if post.first() is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id {id} does not exists!")
+
+    if post.first().owner_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to perform requested action - This is not your post!")
+    
     post.delete(synchronize_session=False)
     db.commit()
     return {"Post Deleted!"}
@@ -52,6 +57,10 @@ def delete_post(id:int, db: Session = Depends(get_db), current_user: int = Depen
 def update_post(id:int, post:schemas.PostUpdate, db: Session = Depends(get_db), current_user: int = Depends(get_current_user)): 
     post_query = db.query(models.Post).filter(models.Post.id == id)
     existing_post = post_query.first()
+
+    if existing_post.owner_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to perform requested action - This is not your post!")
+
     if existing_post is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Post is id: {id} deosnt exist!")
