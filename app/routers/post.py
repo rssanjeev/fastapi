@@ -19,7 +19,7 @@ def get_posts(db: Session = Depends(get_db), response_model=list[schemas.PostRes
 def create_post(post: schemas.PostCreate, db: Session = Depends(get_db), current_user: int = Depends(get_current_user)):
     try:
         model_fields = {key: value for key, value in post.model_dump().items()}
-        new_post = models.Post(**model_fields)
+        new_post = models.Post(owner_id=current_user.id, **model_fields)
         db.add(new_post)
         db.commit()
         db.refresh(new_post)
@@ -48,8 +48,8 @@ def delete_post(id:int, db: Session = Depends(get_db), current_user: int = Depen
     return {"Post Deleted!"}
 
 
-@router.put("/{id}")
-def update_post(id:int, post:schemas.PostUpdate, db: Session = Depends(get_db), current_user: int = Depends(get_current_user)):
+@router.put("/{id}", response_model=schemas.PostResponse)
+def update_post(id:int, post:schemas.PostUpdate, db: Session = Depends(get_db), current_user: int = Depends(get_current_user)): 
     post_query = db.query(models.Post).filter(models.Post.id == id)
     existing_post = post_query.first()
     if existing_post is None:
@@ -57,4 +57,6 @@ def update_post(id:int, post:schemas.PostUpdate, db: Session = Depends(get_db), 
                             detail=f"Post is id: {id} deosnt exist!")
     post_query.update(post.model_dump(), synchronize_session=False)
     db.commit()
-    return {"message":"Post Updated"} 
+    # Return the updated post object
+    updated_post = post_query.first()
+    return updated_post

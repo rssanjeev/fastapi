@@ -9,11 +9,9 @@ class PostBase(BaseModel):
     rating: Optional[int] = 0
 
 class PostCreate(PostBase):
-    owner_id: int
     pass
 
 class PostUpdate(PostBase):
-    owner_id: int
     pass
 
 class PostResponse(PostBase): 
