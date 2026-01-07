@@ -24,6 +24,7 @@ class UserOut(BaseModel):
         from_attributes = True
 
 class PostResponse(PostBase): 
+    id: int
     created_at: datetime
     owner: UserOut
     owner_id: int

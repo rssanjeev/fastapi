@@ -1,4 +1,5 @@
 
+from typing import Optional
 from .. import models, schemas
 from fastapi import Body, Response, status, HTTPException, Depends, APIRouter
 from sqlalchemy.orm import Session
@@ -11,8 +12,8 @@ router = APIRouter(
 )
 
 @router.get("", response_model=list[schemas.PostResponse])
-def get_posts(db: Session = Depends(get_db), current_user: int = Depends(get_current_user), limit: int = 10):
-    posts = db.query(models.Post).limit(limit).all()
+def get_posts(db: Session = Depends(get_db), current_user: int = Depends(get_current_user), limit: int = 10, skip: int = 0, search: Optional[str] = ""):
+    posts = db.query(models.Post).filter(models.Post.title.contains(search)).limit(limit).offset(skip).all()
     return posts
 
 @router.post("", status_code=status.HTTP_201_CREATED, response_model=schemas.PostResponse)
