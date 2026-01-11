@@ -5,7 +5,6 @@ from sqlalchemy.orm import sessionmaker
 from .config import settings
 
 SQL_ALCHEMY_DATABASE = settings.database_url
-print("Database URL:", SQL_ALCHEMY_DATABASE)
 
 if "sqlite" in SQL_ALCHEMY_DATABASE:
     engine = create_engine(SQL_ALCHEMY_DATABASE, connect_args={"check_same_thread": False})

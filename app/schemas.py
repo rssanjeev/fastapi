@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, ConfigDict
 from typing import Optional
 from datetime import datetime
 
@@ -16,20 +16,25 @@ class PostUpdate(PostBase):
 
 
 class UserOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    
     id: int
     email: EmailStr
     created_at: datetime
 
-    class Config:
-        from_attributes = True
-
-class PostResponse(PostBase): 
+class PostResponse(PostBase):
+    model_config = ConfigDict(from_attributes=True)
+    
     id: int
     created_at: datetime
     owner: UserOut
     owner_id: int
-    class Config:
-        from_attributes = True
+
+class PostOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    
+    Post: PostResponse
+    votes: int
 
 class UserCreate(BaseModel):
     email: EmailStr
@@ -47,3 +52,7 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     id: Optional[str] = None
+
+class Vote(BaseModel):
+    post_id: int
+    dir: int  # 1 for upvote, 0 for remove vote
