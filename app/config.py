@@ -1,4 +1,6 @@
 from pydantic_settings import BaseSettings
+import os
+from pathlib import Path
 
 class Settings(BaseSettings):
     database_url: str = "sqlite:///./test.db"
@@ -7,6 +9,6 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 60
 
     class Config:
-        env_file = ".env"
+        env_file = os.path.join(Path(__file__).parent.parent, ".env")
 
 settings = Settings()
